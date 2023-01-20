@@ -2,14 +2,13 @@ from pygame import *
 
 
 class Hero(sprite.Sprite):
-    def __init__(self, x, y, file, screen, group_platform, platform, bullets, cage_group):
+    def __init__(self, x, y, file, screen, group_platform, bullets, cage_group):
         sprite.Sprite.__init__(self)
         self.image = image.load(file).convert_alpha()
         self.image.set_colorkey((255, 255, 255))
         self.rect = self.image.get_rect(center=(x, y))
         self.screen = screen
         self.group_platform = group_platform
-        self.platform = platform
         self.bullets = bullets
         self.cage_group = cage_group
 
@@ -31,8 +30,10 @@ class Hero(sprite.Sprite):
         self.player_frame = 0
         self.jump_frame = 0
         self.death_frame = 0
-        self.health = 15
+        self.health = 40
         self.high_jump = -20
+        self.this_platform = 0
+        self.this_cage = 0
 
         self.max_health = self.health
 
@@ -62,32 +63,28 @@ class Hero(sprite.Sprite):
         self.an_earth = False
         self.idle = True
 
-        '''
-        plat = []
-        for i in self.platform:
-            plat.append(i)
-        '''
-        if self.platform.rect.colliderect(self.rect.x + self.run_x, self.rect.y, self.width, self.height):
-            self.run_y = 0
-            self.run_x = 0
-            self.can_left = False
-            self.can_right = False
+        if self.this_platform != 0:
+            if self.this_platform.rect.colliderect(self.rect.x + self.run_x, self.rect.y, self.width, self.height):
+                self.run_y = 0
+                self.run_x = 0
+                self.can_left = False
+                self.can_right = False
 
-            if not self.can_right and not self.can_left:
-                self.run_y += 0.9
+                if not self.can_right and not self.can_left:
+                    self.run_y += 0.9
 
-            if self.rect.bottom + self.run_y > self.platform.rect.top + 2:
-                if self.rect.y - 23 < args[1]:
-                    self.rect.y = args[1] + 2
-                    self.run_y = 0
+                if self.rect.bottom + self.run_y > self.this_platform.rect.top + 2:
+                    if self.rect.y - 23 < args[1]:
+                        self.rect.y = args[1] + 2
+                        self.run_y = 0
 
-                    self.an_platform = True
-                    self.an_earth = False
-                    self.jump = False
-                    self.can_left = True
-                    self.can_right = True
-        else:
-            self.an_platform = False
+                        self.an_platform = True
+                        self.an_earth = False
+                        self.jump = False
+                        self.can_left = True
+                        self.can_right = True
+            else:
+                self.an_platform = False
 
         if not self.an_platform:
             if self.rect.y > args[0]:
@@ -97,8 +94,9 @@ class Hero(sprite.Sprite):
                 self.an_earth = True
                 self.jump = False
 
-        if self.rect.right > 1200:
-            self.rect.right = 1200
+        if self.rect.right > 3800:
+            self.rect.right = 3800
+
         if self.rect.left < 0:
             self.rect.left = 0
 
@@ -112,6 +110,7 @@ class Hero(sprite.Sprite):
 
     def action(self):
         sense = key.get_pressed()
+
         if not self.over:
             if sense[K_LEFT] or sense[K_a]:
                 if self.can_left:
@@ -141,8 +140,7 @@ class Hero(sprite.Sprite):
                 self.bullet_status = True
 
             elif sense[K_e] and sprite.spritecollide(self, self.cage_group, False):
-                for cage in self.cage_group:
-                    cage.image = image.load('image/environ/cage/cage.png')
+                    self.this_cage.image = image.load('image/environ/cage/cage.png')
 
     def end(self):
         if self.health <= 0:

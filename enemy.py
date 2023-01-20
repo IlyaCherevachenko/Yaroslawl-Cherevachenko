@@ -2,14 +2,14 @@ from pygame import *
 
 
 class Enemy(sprite.Sprite):
-    def __init__(self, x, y, file, screen, hero, hero_group):
+    def __init__(self, x, y, file, screen, hero_group):
         sprite.Sprite.__init__(self)
         self.image = image.load(file).convert_alpha()
 
         self.rect = self.image.get_rect(center=(x, y))
         self.screen = screen
-        self.hero = hero
         self.hero_group = hero_group
+        self.hero = [hero for hero in self.hero_group][0]
         self.width = self.image.get_width()
         self.height = self.image.get_height()
 
@@ -27,6 +27,7 @@ class Enemy(sprite.Sprite):
         self.go = False
         self.idling = False
         self.go_attack = False
+        self.alive_enemy = True
 
     def update(self):
         if self.right:
@@ -58,23 +59,24 @@ class Enemy(sprite.Sprite):
         self.go = False
         self.go_attack = False
 
-        #нужно сделать проще
-        if (self.rect.left - self.distantion < self.hero.rect.centerx < self.rect.right) and not self.hero.an_platform:
-            self.left = True
-            self.right = False
-            if sprite.spritecollide(self, self.hero_group, False):
-                self.go = False
-                self.go_attack = True
-            else:
-                self.rect.x -= 2
-                self.go = True
+        if self.alive_enemy:
+            #нужно сделать проще
+            if (self.rect.left - self.distantion < self.hero.rect.centerx < self.rect.right) and not self.hero.an_platform:
+                self.left = True
+                self.right = False
+                if sprite.spritecollide(self, self.hero_group, False):
+                    self.go = False
+                    self.go_attack = True
+                else:
+                    self.rect.x -= 2
+                    self.go = True
 
-        elif not self.hero.an_platform and (self.rect.left < self.hero.rect.centerx < self.rect.right + self.distantion):
-            self.left = False
-            self.right = True
-            if sprite.spritecollide(self, self.hero_group, False):
-                self.go = False
-                self.go_attack = True
-            else:
-                self.rect.x += 2
-                self.go = True
+            elif not self.hero.an_platform and (self.rect.left < self.hero.rect.centerx < self.rect.right + self.distantion):
+                self.left = False
+                self.right = True
+                if sprite.spritecollide(self, self.hero_group, False):
+                    self.go = False
+                    self.go_attack = True
+                else:
+                    self.rect.x += 2
+                    self.go = True

@@ -2,9 +2,10 @@ from pygame import *
 
 
 class Background(sprite.Sprite):
-    def __init__(self, screen):
+    def __init__(self, x, y, screen):
         super().__init__()
         self.image = image.load('image/environ/background1.png')
+        self.rect = self.image.get_rect(topleft=(x, y))
 
         self.x = 0
         self.y = 0
@@ -23,14 +24,15 @@ class Cage(sprite.Sprite):
 
 
 class Bomb(sprite.Sprite):
-    def __init__(self, x, y, hero_group, hero):
+    def __init__(self, x, y):
         super().__init__()
         self.image = image.load('image/environ/traps/bomb/bomb1.png')
-        self.rect = self.image.get_rect(center=(x, y))
+        self.rect = self.image.get_rect(center=(x, y - 35))
 
         self.boom_anim = ['bomb2.png', 'bomb3.png', 'bomb4.png']
-        self.hero_group = hero_group
-        self.hero = hero
+
+        self.hero_group = None
+        self.hero = None
 
         self.boom = False
 
@@ -45,17 +47,18 @@ class Bomb(sprite.Sprite):
             self.boom_frame += 0.1
             if self.boom_frame < 3:
                 self.image = image.load(f'image/environ/traps/bomb/{self.boom_anim[int(self.boom_frame)]}')
-            else:
-                if self.rect.left - self.distantion < self.hero.rect.x < self.rect.right + self.distantion and self.hero.rect.bottom > self.rect.top + self.distantion and self.boom:
-                    self.hero.health -= self.hero.health
+                if int(self.boom_frame) == 2:
+                    if (self.rect.left - self.distantion < self.hero.rect.x < self.rect.right + self.distantion
+                            and self.hero.rect.bottom > self.rect.top + self.distantion and self.boom):
+                        self.hero.health -= self.hero.health
 
 
 class Ground(sprite.Sprite):
-    def __init__(self, screen):
+    def __init__(self, x, y, screen):
         super().__init__()
         self.image = image.load('image/environ/ground.png')
         self.image.set_colorkey('black')
-        self.rect = self.image.get_rect(center=(350, 690))
+        self.rect = self.image.get_rect(topleft=(x, y))
 
         self.screen_surf = screen
 

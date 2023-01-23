@@ -175,5 +175,6 @@ if __name__ == '__main__':
                     begin = True
                     menu.menu = True
                     pause.pause_status = False
+                    mixer.music.play()
         clock.tick(FPS)
 quit()

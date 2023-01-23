@@ -5,13 +5,15 @@ class Enemy(sprite.Sprite):
     def __init__(self, x, y, file, screen, hero_group):
         sprite.Sprite.__init__(self)
         self.image = image.load(file).convert_alpha()
-
         self.rect = self.image.get_rect(center=(x, y))
+
         self.screen = screen
         self.hero_group = hero_group
         self.hero = [hero for hero in self.hero_group][0]
         self.width = self.image.get_width()
         self.height = self.image.get_height()
+
+        self.attack_sound = mixer.Sound('sounds/attack_enemy/mixkit-mechanical-crate-pick-up-3154.wav')
 
         self.walk = ['walk1.png', 'walk2.png', 'walk3.png', 'walk4.png', 'walk5.png']
         self.idle = ['peace1.png', 'peace2.png', 'peace3.png', 'peace4.png']
@@ -46,10 +48,12 @@ class Enemy(sprite.Sprite):
             self.attack_idle_frame += 0.1
             if self.attack_idle_frame > 4:
                 self.attack_idle_frame -= 4
+                self.attack_sound.play()
                 self.hero.health -= 3
             self.image = image.load(f'image/enemy/{file}/attack/{self.attack[int(self.attack_idle_frame)]}'
                                     ).convert_alpha()
         else:
+            self.attack_sound.stop()
             self.attack_idle_frame += 0.1
             if self.attack_idle_frame > 4:
                 self.attack_idle_frame -= 4
@@ -60,8 +64,8 @@ class Enemy(sprite.Sprite):
         self.go_attack = False
 
         if self.alive_enemy:
-            #нужно сделать проще
-            if (self.rect.left - self.distantion < self.hero.rect.centerx < self.rect.right) and not self.hero.an_platform:
+            if ((self.rect.left - self.distantion < self.hero.rect.centerx < self.rect.right)
+                    and not self.hero.an_platform):
                 self.left = True
                 self.right = False
                 if sprite.spritecollide(self, self.hero_group, False):
@@ -71,7 +75,8 @@ class Enemy(sprite.Sprite):
                     self.rect.x -= 2
                     self.go = True
 
-            elif not self.hero.an_platform and (self.rect.left < self.hero.rect.centerx < self.rect.right + self.distantion):
+            elif (not self.hero.an_platform
+                  and (self.rect.left < self.hero.rect.centerx < self.rect.right + self.distantion)):
                 self.left = False
                 self.right = True
                 if sprite.spritecollide(self, self.hero_group, False):

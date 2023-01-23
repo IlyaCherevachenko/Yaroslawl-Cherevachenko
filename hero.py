@@ -22,20 +22,19 @@ class Hero(sprite.Sprite):
         self.attack_anim = ['attack_far1.png', 'attack_far2.png', 'attack_far3.png', 'attack_far4.png',
                             'attack_far5.png']
 
-        self.death_anim = ['dead1.png', 'dead2.png', 'dead3.png', 'dead4.png', 'dead5.png', 'dead6.png']
-
         self.run_x = 0
         self.run_y = 0
         self.attack_frame = 0
         self.player_frame = 0
         self.jump_frame = 0
-        self.death_frame = 0
-        self.health = 40
+        self.health = 50
         self.high_jump = -20
         self.this_platform = 0
         self.this_cage = 0
+        self.cage_count = 0
+        self.kill_count = 0
 
-        self.max_health = self.health
+        self.all_sprites = None
 
         self.an_earth = False
         self.an_platform = False
@@ -46,10 +45,12 @@ class Hero(sprite.Sprite):
         self.attack = False
         self.can_left = True
         self.can_right = True
-        self.death = False
         self.over = False
         self.idle = True
         self.bullet_status = False
+        self.can_scroll_right = False
+        self.can_scroll_left = False
+        self.win = False
 
         self.width = self.image.get_width()
         self.height = self.image.get_height()
@@ -94,12 +95,6 @@ class Hero(sprite.Sprite):
                 self.an_earth = True
                 self.jump = False
 
-        if self.rect.right > 3800:
-            self.rect.right = 3800
-
-        if self.rect.left < 0:
-            self.rect.left = 0
-
         self.end()
         self.shot()
 
@@ -110,11 +105,19 @@ class Hero(sprite.Sprite):
 
     def action(self):
         sense = key.get_pressed()
-
         if not self.over:
-            if sense[K_LEFT] or sense[K_a]:
+            if sense[K_SPACE]:
+                self.attack = True
+                self.bullet_status = True
+                self.can_left = False
+                self.can_right = False
+
+            elif sense[K_LEFT] or sense[K_a]:
                 if self.can_left:
-                    self.run_x -= 5
+                    if self.rect.x < 200:
+                        self.can_scroll_right = True
+                    else:
+                        self.run_x -= 5
                     self.go = True
                     self.left = True
                     self.right = False
@@ -122,7 +125,10 @@ class Hero(sprite.Sprite):
 
             elif sense[K_RIGHT] or sense[K_d]:
                 if self.can_right:
-                    self.run_x = 5
+                    if self.rect.x > 1000:
+                        self.can_scroll_left = True
+                    else:
+                        self.run_x += 5
                     self.go = True
                     self.left = False
                     self.right = True
@@ -135,19 +141,10 @@ class Hero(sprite.Sprite):
                     self.jump = True
                     self.idle = False
 
-            elif sense[K_SPACE]:
-                self.attack = True
-                self.bullet_status = True
-
-            elif sense[K_e] and sprite.spritecollide(self, self.cage_group, False):
-                    self.this_cage.image = image.load('image/environ/cage/cage.png')
-
     def end(self):
         if self.health <= 0:
             self.over = True
-            self.death = True
             self.idle = False
-            return self.over
 
     def shot(self):
         if self.bullet_status:
@@ -192,10 +189,6 @@ class Hero(sprite.Sprite):
                 self.attack_frame -= 5
             self.image = image.load(f'image/hero/{file}/attack_far/{self.attack_anim[int(self.attack_frame)]}'
                                     ).convert_alpha()
-        elif self.death:
-            self.death_frame += 0.05
-            if self.death_frame < 6:
-                self.image = image.load(f'image/hero/{file}/dead/{self.death_anim[int(self.death_frame)]}')
 
 
 class Bullet(sprite.Sprite):
@@ -204,7 +197,7 @@ class Bullet(sprite.Sprite):
         self.image = image.load(f'image/hero/{file}/arrow.png')
         self.rect = self.image.get_rect(center=(x, y))
         self.bullets = bullets
-        self.distantion = 500
+        self.distantion = 480
         self.hero_x = hero_x
         self.left = left
         self.right = right
